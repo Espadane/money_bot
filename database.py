@@ -241,10 +241,10 @@ def get_formed_report(data_to_answer, report_date) -> str:
             incomes_transactions[category].append(trans_sum)
 
     for category, transactions in expanses_transactions.items():
-        expanses.append(f'{category} {sum(transactions)} руб.')
+        expanses.append(f'{category} {sum(transactions)} руб.\n')
 
     for category, transactions in incomes_transactions.items():
-        incomes.append(f'{category} {sum(transactions)} руб.')
+        incomes.append(f'{category} {sum(transactions)} руб.\n')
 
     answer: str = f'''
 Отчет за {report_date}:
@@ -253,7 +253,7 @@ def get_formed_report(data_to_answer, report_date) -> str:
 Всего расход: {expanse_sum} руб.
 {''.join(expanses)}
 Итого: {income_sum + expanse_sum} руб.
-    '''
+'''
 
     detail: str = 'Детализация:\n' + ''.join(all_transactions)
 

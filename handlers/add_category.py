@@ -64,7 +64,7 @@ async def category_name_chosen(msg: Message, state: FSMContext) -> None:
     """
         обработка ввода называния категории
     """
-    await state.update_data(category_name=msg.text)
+    await state.update_data(category_name=msg.text.lower())
     await state.update_data(user_id=int(msg.from_user.id))
     await msg.answer('Подтвердить?', reply_markup=comfirm_keyboard())
     await state.set_state(AddCategory.confirm_category)
