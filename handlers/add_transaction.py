@@ -1,4 +1,5 @@
 from typing import Dict, Any, Literal
+from datetime import datetime
 
 from aiogram import Router, F
 from aiogram.types import Message, ReplyKeyboardRemove
@@ -38,7 +39,8 @@ async def add_transaction(msg: Message, state: FSMContext) -> None:
         reply_markup=category_keyboard(transaction_category)
     )
     await state.update_data(user_id=int(user_id),
-                            transaction_sort=sort_transaction
+                            transaction_sort=sort_transaction,
+                            transaction_date=datetime.now().strftime('%d.%m.%Y')
                             )
 
     await state.set_state(AddTransaction.chosing_transaction_category)

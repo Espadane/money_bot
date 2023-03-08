@@ -40,8 +40,7 @@ class Transactions(Base):
     id: Column[int] = Column(Integer(), primary_key=True)
     user_id: Column[int] = Column(Integer(), nullable=False)
     transaction_sort: Column[str] = Column(String(100), nullable=False)
-    transaction_date: Column[str] = Column(String(),
-                                           default=datetime.now().strftime('%d.%m.%Y'))
+    transaction_date: Column[str] = Column(String())
     transaction_category_name: Column[str] = Column(
         String(100), nullable=False)
     transaction_sum: Column[int] = Column(Integer(), nullable=False)
@@ -133,6 +132,7 @@ def insert_transaction(user_data) -> None:
             transaction_category_name=user_data['transaction_category_name'],
             transaction_sum=user_data['transaction_sum'],
             transaction_comment=user_data['transaction_comment'],
+            transaction_date=user_data['transaction_date']
         )
 
         session.add(query)
@@ -161,10 +161,12 @@ def get_transactions_on_date(request: str, user_id: int) -> str:
             date: str = datetime.now().strftime('%m.%Y')
         elif request == 'год':
             date: str = datetime.now().strftime('%Y')
-        elif re.match(r'^(0[1-9]|[12][0-9]|3[01]).(0[1-9]|1[0-2]).\d{4}$', request):
+        elif re.match(r'^(0[1-9]|[12][0-9]|3[01]).(0[1-9]|1[0-2]).\d{4}$',
+                      request):
             date: str = request
             day = True
-        elif re.match(r'^(0[1-9]|[12][0-9]|3[01]).(0[1-9]|1[0-2]).\d{4} - (0[1-9]|[12][0-9]|3[01]).(0[1-9]|1[0-2]).\d{4}$', request):
+        elif re.match(r'^(0[1-9]|[12][0-9]|3[01]).(0[1-9]|1[0-2]).\d{4} - (0[1-9]|[12][0-9]|3[01]).(0[1-9]|1[0-2]).\d{4}$',
+                      request):
             date: str = request
         else:
             return 'Я вас не понял, вы уверены, что все правильно ввели?'
