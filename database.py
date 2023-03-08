@@ -47,6 +47,16 @@ class Transactions(Base):
     transaction_comment: Column[str] = Column(String(), nullable=False)
 
 
+class UsersSubscribes(Base):
+    """
+        таблица пользователей и их подписок
+    """
+    __tablename__: str = 'users_subscribes'
+    id: Column[int] = Column(Integer(), primary_key=True)
+    user_id: Column[int] = Column(Integer(), nullable=False)
+    subscribe: Column[int] = Column(Integer(), nullable=False, default=1)
+
+
 try:
     Base.metadata.create_all(engine)
     session: Session = Session(bind=engine)
@@ -177,7 +187,7 @@ def get_transactions_on_date(request: str, user_id: int) -> str:
     except Exception as error:
         logger.warning(error)
         formed_answer: str = 'Не удалось сформировать отчет. Мы уже работаем\
-над решением проблемы.'
+ над решением проблемы.'
     if day:
         formed_answer: str = formed_answer + detail
 
@@ -267,8 +277,36 @@ def get_users_list() -> list:
         получаем список пользователей
     """
     users_list: list = []
-    query: list = session.query(Transactions.user_id).distinct().all()
+    query: list = session.query(UsersSubscribes.user_id).filter(
+        UsersSubscribes.subscribe == 1).all()
     for i in query:
         users_list.append(i[0])
 
     return users_list
+
+
+def change_user_subscribe_status(user_id: int) -> None:
+    """
+        меняем статус подписки пользователя
+    """
+    try:
+        status: int = session.query(UsersSubscribes).filter(
+            UsersSubscribes.user_id == user_id).first().subscribe
+        if status == 1:
+            status = 0
+        elif status == 0:
+            status = 1
+        session.query(UsersSubscribes).filter(
+            UsersSubscribes.user_id == user_id).update(
+                {'user_id': user_id, 'subscribe': status},
+                synchronize_session='fetch')
+    except BaseException:
+        session.add(UsersSubscribes(user_id=user_id, subscribe=1))
+        status: int = 1
+
+    session.commit()
+
+    return status
+
+
+print(get_users_list())

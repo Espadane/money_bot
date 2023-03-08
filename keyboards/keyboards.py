@@ -9,9 +9,10 @@ def main_menu_keyboard() -> ReplyKeyboardMarkup:
     keyboard: ReplyKeyboardBuilder = ReplyKeyboardBuilder()
     keyboard.button(text='Расход')
     keyboard.button(text='Доход')
-    keyboard.adjust(2)
     keyboard.button(text='Добавить категорию')
-    keyboard.adjust(1)
+    keyboard.button(text='Отчет')
+    keyboard.button(text='Вкл/Выкл подписку')
+    keyboard.adjust(2)
 
     return keyboard.as_markup(resize_keyboard=True)
 
@@ -62,4 +63,18 @@ def category_keyboard(items: list[str]) -> ReplyKeyboardMarkup:
 
     keyboard.adjust(3)
 
+    return keyboard.as_markup(resize_keyboard=True)
+
+def report_keyboard() -> ReplyKeyboardMarkup:
+    """
+        клавиатура получения отчетов по дате
+    """
+    keyboard: ReplyKeyboardBuilder = ReplyKeyboardBuilder()
+    keyboard.button(text='Сегодня')
+    keyboard.button(text='Вчера')
+    keyboard.button(text='Месяц')
+    keyboard.button(text='Год')
+    keyboard.button(text='Даты')
+    keyboard.adjust(2)
+    
     return keyboard.as_markup(resize_keyboard=True)
