@@ -307,6 +307,3 @@ def change_user_subscribe_status(user_id: int) -> None:
     session.commit()
 
     return status
-
-
-print(get_users_list())
