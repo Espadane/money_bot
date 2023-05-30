@@ -1,5 +1,6 @@
 import asyncio
 from typing import NoReturn
+from datetime import datetime
 
 from aiogram import Bot, Dispatcher, Router
 from aiogram.types import Message
@@ -10,7 +11,8 @@ import aioschedule
 from config import *
 from logger import logger
 from database import insert_default_categories, get_transactions_on_date,\
-    get_users_list, change_user_subscribe_status
+    get_users_list, change_user_subscribe_status, get_user_categories,\
+        insert_transaction
 from keyboards.keyboards import main_menu_keyboard
 from handlers import add_transaction, add_category, report
 
@@ -42,7 +44,7 @@ async def cmd_status(msg: Message, command: CommandObject) -> None:
 
 
 @router.message(Text('Вкл/Выкл подписку'))
-async def on_of_subscribe(msg: Message) -> None:
+async def toggle_subscription_status(msg: Message) -> None:
     """
         меняем статус подписки по нажатию кнопки
     """
@@ -57,9 +59,49 @@ async def on_of_subscribe(msg: Message) -> None:
     await msg.answer(answer)
 
 
+@router.message(Text(startswith=['расход ', 'доход ']))
+async def text_handler(msg: Message) -> None:
+    text: str = msg.text.lower()
+    user_id: int = msg.from_user.id
+    transaction_date: str = datetime.now().strftime('%d.%m.%Y')
+    user_data: dict = {}
+    transaction_sort: str = text.split(' ')[0]
+    transaction_category_name: str = ''
+    transaction_sum: int = 0
+    transaction_comment: str = ''
+    
+    if 'расход' in transaction_sort or 'доход' in transaction_sort:
+        transaction_category_name: str = text.split(' ')[1]
+        user_categories: set = get_user_categories(user_id, transaction_sort)
+        if transaction_category_name.lower() not in user_categories:
+            transaction_category_name: str = 'другое'
+        if transaction_sort == 'расход':
+            transaction_sum: int = -int(text.split(' ')[2])
+        else:
+            transaction_sum: int = int(text.split(' ')[2])
+        if len(text.split(' ')) >= 4:
+            transaction_comment: str = text.split(' ')[3]
+        user_data: dict = create_user_data(user_id, transaction_sort, transaction_category_name, transaction_sum, transaction_comment, transaction_date)
+
+        insert_transaction(user_data)
+        await msg.answer(f'Транзакция добавлена:{transaction_sort} {transaction_category_name} {transaction_sum} руб. {transaction_comment}')
+    else:
+        await msg.answer('Пожалуйста отправь сообщение в формате "расход(или доход) категория сумма комментарий" ')
+
+def create_user_data(user_id: int, transaction_sort: str, transaction_category_name: str, transaction_sum: int, transaction_comment: str, transaction_date: str) -> dict:
+    return {
+        'user_id': user_id,
+        'transaction_sort': transaction_sort,
+        'transaction_category_name': transaction_category_name,
+        'transaction_sum': transaction_sum,
+        'transaction_comment': transaction_comment,
+        'transaction_date': transaction_date
+    }
+
+
 async def send_daily_report() -> None:
     """
-        отправлеяем отчет за день
+        отправляем отчет за день
     """
     users_list: list = get_users_list()
     for user_id in users_list:
